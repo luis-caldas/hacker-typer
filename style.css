@@ -4,10 +4,29 @@
  * This work is licensed under a Creative Commons Attribution-Noncommercial-Share Alike 3.0 License
  */
 
+::-webkit-scrollbar {
+    width: 15px;
+}
+::-webkit-scrollbar-track {
+    background-color: #007700;
+}
+::-webkit-scrollbar-thumb {
+    background-color: #00DD00;
+}
+::-webkit-scrollbar-thumb:hover {
+    background-color: #00FF00;
+}
+
+@font-face {
+    font-family: consoleRobotoMono;
+    src: url("/roboto_mono.ttf");
+}
+
 body {
     background: #000000;
     color: #00FF00;
-    font-family: monospace;
+    font-family: consoleRobotoMono, RobotoMono, Courier New, Courier, monospace;
+    font-size: 12px;
 }
 
 .popup {
