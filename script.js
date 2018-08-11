@@ -19,64 +19,118 @@ var Typer = {
     speed: 2, // speed of the Typer
     file: "", // file, must be setted
     cursorChar: "█", // necessarily 1 char long
-    accessCount: 0, // times alt is pressed for Access Granted
-    deniedCount: 0, // times caps is pressed for Access Denied
+    numberOfPresses: 3, // number of keypresses needed for a popup to pop
 
-    init: function(){ // inizialize Hacker Typer
+    // popups data
+    popups: {
+        "access": {
+            "count": 0,
+            "id": "gran",
+            "text": "access granted",
+            "css": {
+                "background": "#333",
+                "border-color": "#999"
+            },
+            "keycode": 18
+        },
+        "denied": {
+            "count": 0,
+            "id": "deni",
+            "text": "access denied",
+            "css": {
+                "color": "#F00",
+                "background": "#511",
+                "border-color": "#F00"
+            },
+            "keycode": 20
+        }
+    },
+
+    init: function() { // inizialize Hacker Typer
         setInterval(function() { Typer.updLstChr(); }, 500); // inizialize timer for blinking cursor
         $.get(Typer.file, function(data) { // get the text file
             Typer.text = data; // save the textfile in Typer.text
         });
     },
 
-    content: function(){
+    content: function() {
         return $("#console").html(); // get console content
     },
 
-    write: function(str){ // append to console content
+    write: function(str) { // append to console content
         $("#console").append(str);
         return false;
     },
 
-    makeAccess: function(){ //create Access Granted popUp      FIXME: popup is on top of the page and doesn't show is the page is scrolled
-        Typer.hidepop(); // hide all popups
-        Typer.accessCount = 0; //reset count
-        var ddiv=$("<div id='gran'>").html(""); // create new blank div and id "gran"
-        ddiv.addClass("accessGranted"); // add class to the div
-        ddiv.html("<h1>ACCESS GRANTED</h1>"); // set content of div
+    createPopupDiv: function(idname, text, css) {
+
+        // create empty div with the given id name
+        var tempDiv = $("<div id=\"" + idname + "\"></div>");
+
+        // add classes
+        tempDiv.addClass("popup");
+
+        // add custom css
+        tempDiv.css(css);
+
+        // set content of div
+        tempDiv.html("<h1>" + text + "</h1>");
+
+        return tempDiv;
+    },
+
+    makePopup: function(popupData) {
+        Typer.removePop();
+        Typer.accessCount = 0;
+        var ddiv = Typer.createPopupDiv(
+            popupData["id"],
+            popupData["text"],
+            popupData["css"]
+        );
         $(document.body).prepend(ddiv); // prepend div to body
-        return false;
     },
 
-    makeDenied: function(){ //create Access Denied popUp      FIXME: popup is on top of the page and doesn't show is the page is scrolled
-        Typer.hidepop(); // hide all popups
-        Typer.deniedCout = 0; //reset count
-        var ddiv=$("<div id='deni'>").html(""); // create new blank div and id "deni"
-        ddiv.addClass("accessDenied"); // add class to the div
-        ddiv.html("<h1>ACCESS DENIED</h1>"); // set content of div
-        $(document.body).prepend(ddiv); // prepend div to body
-        return false;
+    removePop: function() { // remove all existing popups
+        for(let i = 0; i < Object.keys(Typer.popups).length; ++i)
+            $("#" + Typer.popups[Object.keys(Typer.popups)[i]]["id"]).remove();
     },
 
-    hidepop: function(){ // remove all existing popups
-        $("#deni").remove();
-        $("#gran").remove();
+    clearAllButPopupCounters: function(indexJump) {
+        for(let i = 0; i < Object.keys(Typer.popups).length; ++i)
+            if (i != indexJump)
+                Typer.popups[Object.keys(Typer.popups)[i]]["count"] = 0;
     },
 
-    addText: function(key){ // main function to add the code
-        if(key.keyCode == 18) { // key 18 = alt key
-            Typer.accessCount++; //increase counter
-            if(Typer.accessCount >= 3) { // if it's presed 3 times
-                Typer.makeAccess(); // make access popup
+    addText: function(key) { // main function to add the code
+
+        // iterate the popups
+        for(let i = 0; i < Object.keys(Typer.popups).length; ++i) {
+
+            if (key.keyCode === Typer.popups[Object.keys(Typer.popups)[i]]["keycode"]) {
+
+                // clear all other counters
+                Typer.clearAllButPopupCounters(i);
+
+                // add a keypress
+                ++Typer.popups[Object.keys(Typer.popups)[i]]["count"];
+
+                // check of a certain number of key presses and make the popup
+                if (Typer.popups[Object.keys(Typer.popups)[i]]["count"] >= Typer.numberOfPresses)
+                    Typer.makePopup(Typer.popups[Object.keys(Typer.popups)[i]]);
+
+                return;
             }
-        } else if(key.keyCode == 20) { // key 20 = caps lock
-            Typer.deniedCount++; // increase counter
-            if(Typer.deniedCount >= 3) { // if it's pressed 3 times
-                Typer.makeDenied(); // make denied popup
-            }
-        } else if(key.keyCode == 27) { // key 27 = esc key
-            Typer.hidepop(); // hide all popups
-        } else if(Typer.text) { // otherway if text is loaded
+
+        }
+
+        // key 27 = esc key
+        if (key.keyCode == 27) {
+
+            // remove all popups
+            Typer.removePop();
+
+        } else if (Typer.text) { // otherway if text is loaded
+
             var cont = Typer.content(); // get the console content
             if(cont.substring(cont.length - 1, cont.length) == Typer.cursorChar) // if the last char is the blinking cursor
                 $("#console").html($("#console").html().substring(0, cont.length - 1)); // remove it before adding the text
@@ -101,7 +155,7 @@ var Typer = {
         }
     },
 
-    updLstChr: function(){ // blinking cursor
+    updLstChr: function() { // blinking cursor
         var cont = this.content(); // get console
         if(cont.substring(cont.length - 1, cont.length) == Typer.cursorChar) // if last char is the cursor
             $("#console").html($("#console").html().substring(0, cont.length - 1)); // remove it
