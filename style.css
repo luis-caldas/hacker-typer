@@ -29,6 +29,10 @@ body {
     font-size: 12px;
 }
 
+div#console {
+    margin-bottom: 40px;
+}
+
 .popup {
     position: fixed;
     top: 50%;

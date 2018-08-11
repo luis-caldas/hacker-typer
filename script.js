@@ -132,20 +132,26 @@ var Typer = {
         } else if (Typer.text) { // otherway if text is loaded
 
             var cont = Typer.content(); // get the console content
-            if(cont.substring(cont.length - 1, cont.length) == Typer.cursorChar) // if the last char is the blinking cursor
+
+            if (cont.substring(cont.length - 1, cont.length) == Typer.cursorChar) // if the last char is the blinking cursor
                 $("#console").html($("#console").html().substring(0, cont.length - 1)); // remove it before adding the text
-            if(key.keyCode != 8){ // if key is not backspace
+
+            if (key.keyCode != 8) { // if key is not backspace
                 Typer.index += Typer.speed;    // add to the index the speed
             } else {
-                if(Typer.index > 0) // else if index is not less than 0
+                if (Typer.index > 0) // else if index is not less than 0
                     Typer.index -= Typer.speed; // remove speed for deleting text
             }
-            var text=$("<div/>").text(Typer.text.substring(0, Typer.index)).html(); // parse the text for stripping html enities
-            var rtn= new RegExp("\n", "g"); // newline regex
-            var rts= new RegExp("\\s", "g"); // whitespace regex
-            var rtt= new RegExp("\\t", "g"); // tab regex
-            $("#console").html(text.replace(rtn,"<br/>").replace(rtt,"&nbsp;&nbsp;&nbsp;&nbsp;").replace(rts,"&nbsp;")); // replace newline chars with br, tabs with 4 space and blanks with an html blank
-            window.scrollBy(0,50); // scroll to make sure bottom is always visible
+
+            var text = $("<div/>").text(Typer.text.substring(0, Typer.index)).html(); // parse the text for stripping html enities
+            var rtn = new RegExp("\n", "g"); // newline regex
+            var rts = new RegExp("\\s", "g"); // whitespace regex
+            var rtt = new RegExp("\\t", "g"); // tab regex
+            $("#console").html(
+                text.replace(rtn, "<br/>").replace(rtt, "&nbsp;&nbsp;&nbsp;&nbsp;").replace(rts, "&nbsp;")
+            ); // replace newline chars with br, tabs with 4 space and blanks with an html blank
+
+            window.scrollBy(0, 50); // scroll to make sure bottom is always visible
         }
         if(key.preventDefault && key.keyCode != 122 ){ // prevent F11(fullscreen) from being blocked
             key.preventDefault();
